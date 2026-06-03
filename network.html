@@ -27,6 +27,43 @@
     </style>
 </head>
 <body class="bg-gray-100 text-gray-800 font-sans min-h-screen">
+    <!-- ハンバーガーメニューボタン (右上に固定) -->
+    <div class="fixed top-4 right-4 z-50">
+    <button id="menu-btn" onclick="toggleMenu()" class="bg-gray-800 hover:bg-gray-700 text-white p-3 rounded-full shadow-lg flex items-center justify-center transition focus:outline-none" aria-label="メニューを開閉">
+        <!-- 三本線アイコン -->
+        <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+        </svg>
+        <!-- 閉じるバツアイコン -->
+        <svg id="close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+    </button>
+</div>
+
+<!-- ドロワーメニュー背景マスク (クリックで閉じる) -->
+<div id="menu-overlay" onclick="toggleMenu()" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity duration-300 opacity-0"></div>
+
+<!-- ドロワーメニュー本体 -->
+<div id="menu-drawer" class="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-40 transform translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto p-6 flex flex-col">
+    <!-- メニュー内の遷移リンク -->
+    <div class="mt-12 mb-6">
+        <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">科目の切り替え</h4>
+        <a href="quiz.html" class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-green-500 to-teal-600 hover:from-green-600 hover:to-teal-700 text-white font-bold rounded-lg shadow-md transition transform hover:-translate-y-0.5">
+            <span>☕ JSP＆サーブレットへ</span>
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+            </svg>
+        </a>
+    </div>
+
+    <!-- その他メニューボタンなど -->
+    <div class="border-t pt-6 mt-6">
+        <button onclick="resetQuiz(); toggleMenu();" class="w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded transition text-center">
+            クイズを最初からやり直す
+        </button>
+    </div>
+</div>
 
     <div class="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
         
@@ -98,6 +135,34 @@
     </div>
 
     <script>
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            const drawer = document.getElementById('menu-drawer');
+            const overlay = document.getElementById('menu-overlay');
+            const menuIcon = document.getElementById('menu-icon');
+            const closeIcon = document.getElementById('close-icon');
+        
+            isMenuOpen = !isMenuOpen;
+        
+            if (isMenuOpen) {
+                // メニューを開く
+                drawer.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.add('opacity-100'), 10);
+                menuIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+            } else {
+                // メニューを閉じる
+                drawer.classList.add('translate-x-full');
+                overlay.classList.remove('opacity-100');
+                setTimeout(() => {
+                    if (!isMenuOpen) overlay.classList.add('hidden');
+                }, 300);
+                menuIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+            }
+        }
         // 全50問の問題データ
         const quizData = [
             // --- ネットワーク基礎 ---
