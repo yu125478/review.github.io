@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSP & サーブレット 50問 徹底穴埋めクイズ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Noto+Sans+JP:wght@400;700&display=swap');
+        
+        body { font-family: 'Noto Sans JP', sans-serif; background-color: #f3f4f6; color: #1f2937; }
+        pre { font-family: 'Fira Code', monospace; background-color: #1e1e1e; color: #f8f8f2; padding: 1.25rem; border-radius: 0.5rem; overflow-x: auto; font-size: 0.875rem; line-height: 1.5; margin-bottom: 1rem;}
+        
+        .code-input {
+            font-family: 'Fira Code', monospace; background-color: #2d2d2d; color: #4ade80; 
+            border: 1px solid #4b5563; padding: 0.125rem 0.5rem; border-radius: 0.25rem; 
+            outline: none; transition: all 0.2s; text-align: center;
+        }
+        .code-input:focus { border-color: #60a5fa; box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.2); }
+        .correct-input { background-color: #064e3b; border-color: #10b981; color: #10b981; }
+        .incorrect-input { background-color: #7f1d1d; border-color: #ef4444; color: #ef4444; }
+
+        html { scroll-behavior: smooth; }
+    </style>
+</head>
+<body class="p-4 md:p-8 relative">
+
+    <!-- ハンバーガーメニューボタン (右上に固定) -->
+    <div class="fixed top-4 right-4 z-50">
+        <button id="menu-btn" onclick="toggleMenu()" class="bg-blue-600 hover:bg-blue-700 text-white p-3 rounded-full shadow-lg flex items-center justify-center transition focus:outline-none" aria-label="メニューを開閉">
+            <svg id="menu-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+            </svg>
+            <svg id="close-icon" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+        </button>
+    </div>
+
+    <!-- ドロワーメニュー背景マスク -->
+    <div id="menu-overlay" onclick="toggleMenu()" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden transition-opacity duration-300 opacity-0"></div>
+
+    <!-- ドロワーメニュー本体 -->
+    <div id="menu-drawer" class="fixed top-0 right-0 h-full w-80 bg-white shadow-2xl z-40 transform translate-x-full transition-transform duration-300 ease-in-out overflow-y-auto p-6 flex flex-col">
+        
+        <!-- 科目変更リンク (目立つ上部に配置) -->
+        <div class="mt-12 mb-6">
+            <h4 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">科目の切り替え</h4>
+            <a href="network.html" class="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold rounded-lg shadow-md transition transform hover:-translate-y-0.5">
+                <span>🌐 ネットワーク基礎へ</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                </svg>
+            </a>
+        </div>
+
+        <h3 class="text-lg font-bold text-gray-800 border-b pb-2 mb-4">章別スキップナビ</h3>
+        <nav class="flex-1 space-y-2" id="drawer-nav">
+            <!-- JavaScriptで各章の目次リンクが動的に生成されます -->
+        </nav>
+
+        <div class="border-t pt-6 mt-6 space-y-3">
+            <button onclick="scrollToTop(); toggleMenu();" class="w-full py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold rounded transition">
+                ページの先頭へ戻る
+            </button>
+            <button onclick="resetAll(); toggleMenu();" class="w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 font-bold rounded transition">
+                すべての入力をリセット
+            </button>
+        </div>
+    </div>
+
+    <div class="max-w-4xl mx-auto">
+        <header class="mb-10 text-center pr-12">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-800 mb-4">JSP & サーブレット 50問 徹底穴埋めクイズ</h1>
+            <p class="text-gray-600">「スッキリわかるサーブレット＆JSP入門」の全範囲を網羅した50問ドリルです。<br>右上の青いメニューボタンから各章へのスキップや科目の切り替えが可能です。</p>
+            
+            <div class="mt-6 flex flex-wrap justify-center gap-2" id="chapter-nav">
+                <!-- ヘッダー用の章ナビゲーション -->
+            </div>
+        </header>
+
+        <div id="quiz-container">
+            <!-- クイズコンテンツがここに生成されます -->
+        </div>
+        
+        <div class="text-center mt-12 mb-10">
+            <button onclick="resetAll()" class="bg-gray-700 hover:bg-gray-800 text-white font-bold py-3 px-8 rounded-full shadow-lg transition duration-200">すべての入力をリセット</button>
+        </div>
+    </div>
+
+    <script>
+        // 問題データ (50問)
+        const quizData = [
+            {
+                chapter: "第1〜3章: サーブレットの基本・リクエスト処理",
+                color: "blue",
+                questions: [
+                    { title: "サーブレットクラスの継承", desc: "HTTPリクエストを処理するための基本クラスを継承します。", code: "import javax.servlet.http.HttpServlet;\n\npublic class HelloServlet extends [[HttpServlet]] {\n}" },
+                    { title: "GETリクエストの処理", desc: "GETメソッドで送信されたリクエストを処理するメソッドを定義します。", code: "protected void [[doGet]](HttpServletRequest request, HttpServletResponse response) \n        throws ServletException, IOException {\n}" },
+                    { title: "POSTリクエストの処理", desc: "フォームからPOSTメソッドで送信されたリクエストを処理します。", code: "protected void [[doPost]](HttpServletRequest request, HttpServletResponse response) \n        throws ServletException, IOException {\n}" },
+                    { title: "レスポンスの文字コード指定", desc: "HTMLを出力する前に、コンテンツタイプと文字コードを指定します。", code: "response.[[setContentType]](\"text/html; charset=UTF-8\");" },
+                    { title: "HTML出力用オブジェクトの取得", desc: "ブラウザに文字を出力するためのPrintWriterを取得します。", code: "[[PrintWriter]] out = response.getWriter();\nout.println(\"<html>\");" },
+                    { title: "送信パラメータの取得", desc: "フォームから送信された単一の値(name)を取得します。", code: "String name = request.[[getParameter]](\"name\");" },
+                    { title: "POST送信時の文字化け対策", desc: "パラメータを取得する前にリクエストの文字コードを指定します。", code: "request.[[setCharacterEncoding]](\"UTF-8\");" },
+                    { title: "複数値パラメータの取得", desc: "チェックボックスなど、同じ名前で複数の値が送られる場合に使用します。", code: "String[] hobbies = request.[[getParameterValues]](\"hobby\");" },
+                    { title: "リダイレクト", desc: "ブラウザに別のURLへ再リクエストするよう指示を出します。", code: "response.[[sendRedirect]](\"/login.jsp\");" },
+                    { title: "サーブレットの例外処理", desc: "サーブレット特有の例外をスローします。", code: "protected void doGet(HttpServletRequest req, HttpServletResponse res) \n        throws [[ServletException]], IOException { }" }
+                ]
+            },
+            {
+                chapter: "第4〜5章: JSPの基本・MVCモデル",
+                color: "green",
+                questions: [
+                    { title: "pageディレクティブ（文字コード）", desc: "JSPファイルの先頭で文字コードを指定します。", code: "[[<%@]] page contentType=\"text/html; charset=UTF-8\" [[%>]]" },
+                    { title: "pageディレクティブ（インポート）", desc: "JSP内でJavaのクラスをインポートします。", code: "<%@ page [[import]]=\"java.util.Date\" %>" },
+                    { title: "includeディレクティブ", desc: "ヘッダーなどの別JSPファイルを静的に読み込みます。", code: "<%@ [[include]] file=\"header.jsp\" %>" },
+                    { title: "JSP式（エクスプレッション）", desc: "Javaの式の評価結果をそのままHTMLとして出力します（現在は非推奨）。", code: "<p>現在時刻: [[<%=]] new Date() [[%>]]</p>" },
+                    { title: "リクエストスコープへの保存", desc: "サーブレットで処理したデータをスコープに保存します。", code: "request.[[setAttribute]](\"user\", user);" },
+                    { title: "RequestDispatcherの取得", desc: "フォワード先を指定してディスパッチャを取得します。", code: "[[RequestDispatcher]] dispatcher = \n    request.getRequestDispatcher(\"/WEB-INF/view.jsp\");" },
+                    { title: "フォワードの実行", desc: "JSPへ処理を委譲（フォワード）します。", code: "dispatcher.[[forward]](request, response);" },
+                    { title: "属性の取得（サーブレット側）", desc: "保存した属性をサーブレットで取り出します（キャストが必要）。", code: "User user = (User) request.[[getAttribute]](\"user\");" },
+                    { title: "MVCの画面隠蔽", desc: "JSPに直接アクセスされないよう配置する専用フォルダです。", code: "request.getRequestDispatcher(\"/[[WEB-INF]]/view.jsp\");" },
+                    { title: "リクエストスコープの寿命", desc: "リクエストスコープは、レスポンスが返されるまで有効です。サーブレットからJSPへのフォワード中のみデータを保持します。", code: "// サーブレットからJSPへの [[フォワード]] 中のみ有効" }
+                ]
+            },
+            {
+                chapter: "第6〜7章: セッション・アプリケーション・JavaBeans",
+                color: "purple",
+                questions: [
+                    { title: "セッションの取得", desc: "ユーザーごとの状態を保持するセッションスコープを取得します。", code: "HttpSession session = request.[[getSession]]();" },
+                    { title: "セッションへの保存", desc: "ログイン情報などをセッションスコープに保存します。", code: "session.[[setAttribute]](\"loginUser\", user);" },
+                    { title: "セッションの破棄", desc: "ログアウト処理などで、セッションを安全に破棄します。", code: "session.[[invalidate]]();" },
+                    { title: "特定のセッション属性の削除", desc: "セッションから特定のデータのみを削除します。", code: "session.[[removeAttribute]](\"cart\");" },
+                    { title: "アプリケーションスコープ of ServletContext", desc: "アプリ全体で共有されるスコープを取得します。", code: "[[ServletContext]] application = request.getServletContext();" },
+                    { title: "JavaBeansの条件1 (直列化)", desc: "セッション保存時などに備え、直列化可能にします。", code: "public class User implements [[java.io.Serializable]] {\n}" },
+                    { title: "JavaBeansの条件2 (コンストラクタ)", desc: "引数を持たないデフォルトコンストラクタが必要です。", code: "public class User {\n    public [[User]]() { }\n}" },
+                    { title: "JavaBeansの条件3 (カプセル化)", desc: "フィールドはprivateにし、getter/setterを用意します。", code: "private String name;\n\npublic String [[getName]]() {\n    return this.name;\n}" },
+                    { title: "JavaBeansの条件4 (setter)", desc: "フィールドの値を設定するメソッドです。", code: "public void [[setName]](String name) {\n    this.name = name;\n}" },
+                    { title: "スレッドセーフの意識", desc: "サーブレットのフィールドは全ユーザーで共有されるため、リクエストごとの値はサーブレットのフィールドに持たせてはいけません。", code: "// サーブレットクラスの [[フィールド]] にユーザーデータを保持しない" }
+                ]
+            },
+            {
+                chapter: "第8章: EL式とJSTL",
+                color: "orange",
+                questions: [
+                    { title: "EL式の基本構文", desc: "JSPでスコープの属性を簡潔に表示します。", code: "<p>こんにちは、[[${]] user.name [[}]] さん</p>" },
+                    { title: "リクエストパラメータの取得(EL)", desc: "EL式でフォーム送信されたパラメータ(id)を直接表示します。", code: "<p>ID: \\${[[param]].id}</p>" },
+                    { title: "スコープの明示(セッション)", desc: "同名の属性がある場合、セッションスコープを明示します。", code: "<p>名前: \\${[[sessionScope]].loginUser.name}</p>" },
+                    { title: "EL式の空判定(empty)", desc: "値がnullや空文字、空リストの場合にtrueになります。", code: "<!-- errorMsgが空でない場合に表示 -->\n<c:if test=\"\\${![[empty]] errorMsg}\">" },
+                    { title: "JSTLのtaglibディレクティブ", desc: "JSTL Coreタグライブラリを使用するための宣言です。", code: "<%@ taglib [[prefix]]=\"c\" [[uri]]=\"http://xmlns.jcp.org/jsp/jstl/core\" %>" },
+                    { title: "JSTLでの安全な出力", desc: "XSS対策として、HTML特殊文字をエスケープして出力します。", code: "<[[c:out]] value=\"\\${msg}\" />" },
+                    { title: "JSTLの繰り返し処理", desc: "リスト(list要素)の中身を順番に取り出して表示します。", code: "<[[c:forEach]] var=\"item\" items=\"\\${list}\">\n    \\${item.name}\n</c:forEach>" },
+                    { title: "JSTLの条件分岐(単一)", desc: "test属性の条件がtrueのときのみ中身を処理します。", code: "<[[c:if]] test=\"\\${age >= 18}\">\n    成人です。\n</c:if>" },
+                    { title: "JSTLの条件分岐(複数)", desc: "Javaのswitch文やif-else文のように複数の条件を記述する外枠です。", code: "<[[c:choose]]>\n    <c:when test=\"\\${type == 1}\">タイプ1</c:when>\n    <c:otherwise>その他</c:otherwise>\n</c:choose>" },
+                    { title: "JSTLのURL生成", desc: "コンテキストパスを自動補完し、セッションID付与なども考慮したURLを生成します。", code: "<a href=\"<[[c:url]] value='/login.jsp' />\">ログイン</a>" }
+                ]
+            },
+            {
+                chapter: "第9〜13章: データベース連携・フィルタ・リスナ",
+                color: "red",
+                questions: [
+                    { title: "JDBCドライバのロード", desc: "データベースを利用するためにドライバをメモリに読み込みます。", code: "[[Class.forName]](\"org.h2.Driver\");" },
+                    { title: "データベースへの接続", desc: "URL、ユーザー名、パスワードを指定して接続(Connection)を取得します。", code: "Connection conn = [[DriverManager]].getConnection(url, user, pass);" },
+                    { title: "SQLの準備", desc: "SQL文を事前にコンパイルし、安全に実行する準備をします。", code: "[[PreparedStatement]] pstmt = conn.prepareStatement(\"SELECT * FROM EMP\");" },
+                    { title: "検索SQL(SELECT)の実行", desc: "SELECT文を実行し、結果セットを取得します。", code: "[[ResultSet]] rs = pstmt.executeQuery();" },
+                    { title: "更新SQL(INSERT等)の実行", desc: "INSERT/UPDATE/DELETE文を実行し、更新件数を取得します。", code: "int resultCount = pstmt.[[executeUpdate]]();" },
+                    { title: "検索結果の読み取りループ", desc: "結果セットから1行ずつデータが存在する限り読み取ります。", code: "while (rs.[[next]]()) {\n    String name = rs.getString(\"NAME\");\n}" },
+                    { title: "フィルタの作成", desc: "全リクエストに対する共通処理(文字コード設定など)を行うフィルタを作成します。", code: "public class EncodeFilter implements [[Filter]] {\n}" },
+                    { title: "フィルタの処理メソッド", desc: "フィルタの核となる処理を記述するメソッドです。", code: "public void [[doFilter]](ServletRequest req, ServletResponse res, FilterChain chain) {\n}" },
+                    { title: "次の処理への橋渡し", desc: "フィルタ処理が終わった後、本来のサーブレットや次のフィルタへ処理を進めます。", code: "[[chain]].doFilter(request, response);" },
+                    { title: "リスナの作成", desc: "アプリの起動時・終了時に処理を行うリスナを作成します。", code: "public class AppListener implements [[ServletContextListener]] {\n    public void contextInitialized(ServletContextEvent sce) { }\n}" }
+                ]
+            }
+        ];
+
+        let questionCounter = 1;
+        let isMenuOpen = false;
+
+        function toggleMenu() {
+            const drawer = document.getElementById('menu-drawer');
+            const overlay = document.getElementById('menu-overlay');
+            const menuIcon = document.getElementById('menu-icon');
+            const closeIcon = document.getElementById('close-icon');
+
+            isMenuOpen = !isMenuOpen;
+
+            if (isMenuOpen) {
+                drawer.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.add('opacity-100'), 10);
+                menuIcon.classList.add('hidden');
+                closeIcon.classList.remove('hidden');
+            } else {
+                drawer.classList.add('translate-x-full');
+                overlay.classList.remove('opacity-100');
+                setTimeout(() => {
+                    if (!isMenuOpen) overlay.classList.add('hidden');
+                }, 300);
+                menuIcon.classList.remove('hidden');
+                closeIcon.classList.add('hidden');
+            }
+        }
+
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function renderQuiz() {
+            const container = document.getElementById('quiz-container');
+            const navContainer = document.getElementById('chapter-nav');
+            const drawerNav = document.getElementById('drawer-nav');
+            
+            quizData.forEach((chapterData, cIndex) => {
+                const targetId = `chapter-${cIndex}`;
+
+                // ヘッダーナビ
+                const navBtn = document.createElement('a');
+                navBtn.href = `#${targetId}`;
+                navBtn.className = `px-4 py-2 bg-${chapterData.color}-100 text-${chapterData.color}-800 rounded-full text-sm font-bold hover:bg-${chapterData.color}-200 transition`;
+                navBtn.innerText = chapterData.chapter.split(':')[0];
+                navContainer.appendChild(navBtn);
+
+                // ドロワーメニュー内ナビ
+                const drawerBtn = document.createElement('a');
+                drawerBtn.href = `#${targetId}`;
+                drawerBtn.onclick = toggleMenu;
+                drawerBtn.className = `block px-4 py-3 bg-gray-50 hover:bg-gray-100 border-l-4 border-${chapterData.color}-500 rounded text-gray-800 text-sm font-semibold transition`;
+                drawerBtn.innerText = chapterData.chapter;
+                drawerNav.appendChild(drawerBtn);
+
+                // コンテナ構築
+                const chapterDiv = document.createElement('div');
+                chapterDiv.id = targetId;
+                chapterDiv.className = "mb-16 pt-4";
+                
+                const chapterTitle = document.createElement('h2');
+                chapterTitle.className = `text-2xl font-bold mb-6 pb-2 border-b-4 border-${chapterData.color}-500 text-gray-800`;
+                chapterTitle.innerText = chapterData.chapter;
+                chapterDiv.appendChild(chapterTitle);
+
+                chapterData.questions.forEach((q) => {
+                    const qId = `q${questionCounter}`;
+                    const block = document.createElement('section');
+                    block.className = `bg-white rounded-xl shadow-sm hover:shadow-md transition p-6 mb-6 border-l-4 border-${chapterData.color}-500`;
+                    
+                    const { highlightedCode, inputsCount } = processCode(q.code, qId);
+                    
+                    block.innerHTML = `
+                        <div class="flex flex-col md:flex-row justify-between mb-3">
+                            <h3 class="text-lg font-bold flex items-center">
+                                <span class="bg-${chapterData.color}-100 text-${chapterData.color}-800 rounded-full w-8 h-8 flex items-center justify-center mr-3 text-sm shrink-0">Q${questionCounter}</span>
+                                ${q.title}
+                            </h3>
+                        </div>
+                        <p class="mb-4 text-sm text-gray-700">${q.desc}</p>
+                        
+                        <div class="relative">
+                            <pre><code>${highlightedCode}</code></pre>
+                        </div>
+                        
+                        <div class="mt-4 flex flex-wrap justify-between items-center gap-3">
+                            <button onclick="checkAnswers('${qId}', ${inputsCount})" class="bg-${chapterData.color}-600 hover:bg-${chapterData.color}-700 text-white font-semibold py-2 px-6 rounded shadow transition duration-200">
+                                答え合わせ
+                            </button>
+                        </div>
+                        
+                        <div id="${qId}-result" class="mt-4 p-4 rounded hidden"></div>
+                    `;
+                    
+                    chapterDiv.appendChild(block);
+                    questionCounter++;
+                });
+
+                container.appendChild(chapterDiv);
+            });
+            
+            setupEnterKeys();
+        }
+
+        function processCode(rawCode, qId) {
+            let text = rawCode.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+            text = text.replace(/\\\$/g, "$");
+            
+            let blanks = [];
+            text = text.replace(/\[\[(.*?)\]\]/g, (match, ans) => {
+                blanks.push(ans);
+                return `___BLANK_${blanks.length - 1}___`;
+            });
+
+            blanks.forEach((ans, i) => {
+                const cleanAns = ans.replace(/&lt;/g, "<").replace(/&gt;/g, ">");
+                const safeAns = cleanAns.replace(/"/g, '&quot;');
+                const width = Math.max(cleanAns.length, 3) + 2; 
+                
+                const inputHtml = `<input type="text" id="${qId}-${i+1}" data-answer="${safeAns}" class="code-input" style="width: ${width}ch;" autocomplete="off" spellcheck="false" placeholder="?">`;
+                text = text.replace(`___BLANK_${i}___`, inputHtml);
+            });
+
+            return { highlightedCode: text, inputsCount: blanks.length };
+        }
+
+        function checkAnswers(questionId, count) {
+            let correctCount = 0;
+            let errorDetails = [];
+            const resultDiv = document.getElementById(questionId + "-result");
+            resultDiv.classList.remove("hidden", "bg-green-100", "bg-red-100", "text-green-800", "text-red-800", "border-green-300", "border-red-300");
+
+            for (let i = 1; i <= count; i++) {
+                const inputElement = document.getElementById(`${questionId}-${i}`);
+                if(!inputElement) continue;
+
+                const userAnswer = inputElement.value.trim();
+                const correctAnswer = inputElement.getAttribute("data-answer");
+
+                inputElement.classList.remove("correct-input", "incorrect-input");
+
+                if (userAnswer === correctAnswer) {
+                    inputElement.classList.add("correct-input");
+                    correctCount++;
+                } else {
+                    inputElement.classList.add("incorrect-input");
+                    const safeDisp = correctAnswer.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                    if (userAnswer === "") {
+                        errorDetails.push(`空欄${i}: 未入力です。(正解: <code>${safeDisp}</code>)`);
+                    } else {
+                        errorDetails.push(`空欄${i}: 誤りです。(正解: <code>${safeDisp}</code>)`);
+                    }
+                }
+            }
+
+            if (correctCount === count) {
+                resultDiv.classList.add("bg-green-100", "text-green-800", "border", "border-green-300");
+                resultDiv.innerHTML = `<div class="flex items-center"><svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg><span class="font-bold">正解！</span></div>`;
+            } else {
+                resultDiv.classList.add("bg-red-100", "text-red-800", "border", "border-red-300");
+                let errorHtml = `<div class="font-bold mb-1">${count}箇所中 ${correctCount}箇所正解です。</div><ul class="list-disc pl-5 text-sm space-y-1">`;
+                errorDetails.forEach(err => { errorHtml += `<li>${err}</li>`; });
+                errorHtml += `</ul>`;
+                resultDiv.innerHTML = errorHtml;
+            }
+        }
+        
+        function resetAll() {
+            if(confirm("全ての入力をリセットして最初からやり直しますか？")) {
+                document.querySelectorAll('.code-input').forEach(input => {
+                    input.value = "";
+                    input.classList.remove("correct-input", "incorrect-input");
+                });
+                document.querySelectorAll('[id$="-result"]').forEach(result => {
+                    result.classList.add("hidden");
+                    result.innerHTML = "";
+                });
+                scrollToTop();
+            }
+        }
+        
+        function setupEnterKeys() {
+            document.querySelectorAll('.code-input').forEach(input => {
+                input.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') {
+                        const qId = this.id.split('-')[0];
+                        const inputs = this.closest('section').querySelectorAll('.code-input');
+                        checkAnswers(qId, inputs.length);
+                    }
+                });
+            });
+        }
+
+        window.onload = renderQuiz;
+    </script>
+</body>
+</html>
